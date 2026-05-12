@@ -41,7 +41,7 @@ st.set_page_config(page_title="Gerenciador de Faturas", page_icon="💳")
 st.title("Gerenciador de Faturas")
 
 # Menu de navegação lateral
-menu = ["Visualizar Contas", "Adicionar Conta", "Adicionar Saldo", "Limpar Registros"]
+menu = ["Visualizar Contas", "\nAdicionar Conta", "\nAdicionar Saldo", "\nLimpar Registros"]
 escolha = st.sidebar.radio("Navegação", menu)
 
 if escolha == "Adicionar Conta":
@@ -75,8 +75,8 @@ elif escolha == "Visualizar Contas":
     saldo_atual = get_saldo()
     divida_total = sum(conta[2] for conta in contas)
     
-    st.markdown(f"**Dívida Total:** R$ {divida_total:.2f} &nbsp;&nbsp;|&nbsp;&nbsp; **Saldo Disponível:** R$ {saldo_atual:.2f}")
-    
+st.markdown(f"**Dívida Total:** R\$ {divida_total:.2f} &nbsp;&nbsp;|&nbsp;&nbsp; **Saldo Disponível:** R\$ {saldo_atual:.2f}")
+
     # Barra de Progresso Gráfica
     if divida_total > 0:
         progresso = min(saldo_atual / divida_total, 1.0)
