@@ -38,6 +38,19 @@ def limpar_bd():
 
 # --- INTERFACE ---
 st.set_page_config(page_title="Gerenciador de Faturas", page_icon="💳")
+
+# Injeção de CSS para dar espaço nas opções do menu lateral
+st.markdown(
+    """
+    <style>
+    div[role="radiogroup"] > label {
+        margin-bottom: 15px !important; 
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("Gerenciador de Faturas")
 
 # Menu de navegação lateral
@@ -75,11 +88,11 @@ elif escolha == "Visualizar Contas":
     saldo_atual = get_saldo()
     divida_total = sum(conta[2] for conta in contas)
     
-    # Mostra os valores em duas colunas lado a lado (Estilo Dashboard)
+    # --- CARDS DE VALORES LADO A LADO ---
     col1, col2 = st.columns(2)
     col1.metric("Dívida Total", f"R$ {divida_total:.2f}")
     col2.metric("Saldo Disponível", f"R$ {saldo_atual:.2f}")
-
+    
     # Barra de Progresso Gráfica
     if divida_total > 0:
         progresso = min(saldo_atual / divida_total, 1.0)
@@ -115,4 +128,4 @@ elif escolha == "Limpar Registros":
     if st.button("Confirmar Limpeza", type="primary"):
         limpar_bd()
         st.success("Todos os registros do mês foram apagados!")
-  
+    
