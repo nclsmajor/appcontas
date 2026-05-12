@@ -41,7 +41,7 @@ st.set_page_config(page_title="Gerenciador de Faturas", page_icon="💳")
 st.title("Gerenciador de Faturas")
 
 # Menu de navegação lateral
-menu = ["Visualizar Contas", "\nAdicionar Conta", "\nAdicionar Saldo", "\nLimpar Registros"]
+menu = ["Visualizar Contas", "Adicionar Conta", "Adicionar Saldo", "Limpar Registros"]
 escolha = st.sidebar.radio("Navegação", menu)
 
 if escolha == "Adicionar Conta":
