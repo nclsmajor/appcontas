@@ -51,9 +51,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("Gerenciador de Faturas")
+st.title("Gerente de Faturas")
 
-# Menu de navegação lateral
+# Menu de navegação lateral (OS NOMES AQUI DEVEM SER EXATAMENTE IGUAIS AOS DOS 'IFs')
 menu = ["Visualizar Contas", "Adicionar Conta", "Adicionar Saldo", "Limpar Registros"]
 escolha = st.sidebar.radio("Navegação", menu)
 
@@ -115,17 +115,16 @@ elif escolha == "Visualizar Contas":
         
     st.divider()
     
-    # Tabela com as contas listadas (da menor para a maior)
+    # Tabela com as contas listadas
     if contas:
         df = pd.DataFrame(contas, columns=["Banco", "Motivo", "Valor (R$)"])
-        # Exibe a tabela ocultando o índice numérico padrão do Pandas
         st.dataframe(df, use_container_width=True, hide_index=True)
 
 elif escolha == "Limpar Registros":
     st.header("Fim do Mês")
-    st.warning("Atenção: Isso zerará todo o seu saldo e apagará todas as contas pendentes para iniciar um novo ciclo.")
+    st.warning("Atenção: Isso zerará todo o seu saldo e apagará todas as contas pendentes.")
     
     if st.button("Confirmar Limpeza", type="primary"):
         limpar_bd()
         st.success("Todos os registros do mês foram apagados!")
-    
+        
