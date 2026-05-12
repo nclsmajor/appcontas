@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
+from datetime import date
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Gerenciador de Faturas", page_icon="💳")
@@ -18,10 +19,12 @@ st.markdown(
 st.title("Gerente de Faturas")
 
 # --- CONEXÃO COM O GOOGLE SHEETS ---
+# Configura a conexão usando a funcionalidade nativa do Streamlit
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # --- FUNÇÕES DE LÓGICA ---
 def get_saldo():
+    # Lê a aba 'saldo' ignorando o cache para ter dados em tempo real
     df_saldo = conn.read(worksheet="saldo", ttl=0)
     return float(df_saldo['valor'].iloc[0])
 
@@ -32,6 +35,7 @@ def update_saldo(novo_valor):
     conn.update(worksheet="saldo", data=df_saldo)
 
 def get_contas():
+    # Lê todas as contas registradas
     df_contas = conn.read(worksheet="contas", ttl=0)
     df_contas = df_contas.dropna(how="all")
     if not df_contas.empty:
@@ -59,6 +63,9 @@ if escolha == "Adicionar Conta":
     cobrador = st.text_input("Quem está cobrando? (Ex: Banco, Supermercado, Academia)")
     valor = st.number_input("Valor da Dívida (R$)", min_value=0.0, format="%.2f")
     
+    # --- NOVO CAMPO DE DATA DE VENCIMENTO ---
+    data_vencimento = st.date_input("Data de Vencimento", value=date.today(), format="DD/MM/YYYY")
+    
     opcao_motivo = st.selectbox("Motivo da Dívida", ["crédito", "outro"])
     
     if opcao_motivo == "outro":
@@ -70,15 +77,21 @@ if escolha == "Adicionar Conta":
     if st.button("Salvar Conta"):
         if cobrador and valor > 0 and motivo:
             df_contas = conn.read(worksheet="contas", ttl=0).dropna(how="all")
-            # Nova estrutura de colunas: cobrador, motivo, valor, tipo
+            
+            # Formata a data para salvar como texto (ex: 15/05/2026)
+            data_formatada = data_vencimento.strftime("%d/%m/%Y")
+            
+            # Nova estrutura de colunas atualizada com a data
             nova_conta = pd.DataFrame({
                 "cobrador": [cobrador], 
                 "motivo": [motivo], 
                 "valor": [valor],
-                "tipo": [tipo_conta]
+                "tipo": [tipo_conta],
+                "data_vencimento": [data_formatada]
             })
             df_atualizado = pd.concat([df_contas, nova_conta], ignore_index=True)
             conn.update(worksheet="contas", data=df_atualizado)
+            
             st.success("Conta registrada com sucesso!")
         else:
             st.warning("Preencha todos os campos e insira um valor maior que zero.")
@@ -96,6 +109,7 @@ elif escolha == "Adicionar Saldo":
 
 elif escolha == "Visualizar Contas":
     st.header("Resumo do Mês")
+    
     try:
         contas = get_contas()
         saldo_atual = get_saldo()
@@ -130,7 +144,14 @@ elif escolha == "Visualizar Contas":
         st.divider()
         
         if not contas.empty:
-            df_exibir = contas.rename(columns={"cobrador": "Cobrador", "motivo": "Motivo", "valor": "Valor (R$)", "tipo": "Tipo"})
+            # Exibe a coluna de data na tabela de forma elegante
+            df_exibir = contas.rename(columns={
+                "cobrador": "Cobrador", 
+                "motivo": "Motivo", 
+                "valor": "Valor (R$)", 
+                "tipo": "Tipo",
+                "data_vencimento": "Vencimento"
+            })
             st.dataframe(df_exibir, use_container_width=True, hide_index=True)
             
     except Exception as e:
@@ -145,7 +166,12 @@ elif escolha == "Excluir Conta":
         if not contas.empty:
             opcoes = []
             for i, row in contas.iterrows():
-                opcoes.append(f"{row['cobrador']} - R$ {row['valor']} ({row['tipo']})")
+                # Tenta puxar a data, se não houver (para contas cadastradas antes dessa atualização), deixa em branco
+                data_venc = row.get('data_vencimento', 'Sem data')
+                if pd.isna(data_venc):
+                    data_venc = 'Sem data'
+                    
+                opcoes.append(f"{row['cobrador']} - R$ {row['valor']} ({row['tipo']}) - Venc: {data_venc}")
             
             conta_selecionada = st.selectbox("Selecione a conta:", range(len(opcoes)), format_func=lambda x: opcoes[x])
             
@@ -157,4 +183,3 @@ elif escolha == "Excluir Conta":
             st.warning("Não há contas cadastradas.")
     except Exception as e:
         st.error("Erro ao carregar as contas.")
-            
