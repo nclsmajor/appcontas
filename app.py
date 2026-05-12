@@ -75,7 +75,10 @@ elif escolha == "Visualizar Contas":
     saldo_atual = get_saldo()
     divida_total = sum(conta[2] for conta in contas)
     
-st.markdown(f"**Dívida Total:** R\$ {divida_total:.2f} &nbsp;&nbsp;|&nbsp;&nbsp; **Saldo Disponível:** R\$ {saldo_atual:.2f}")
+    # Mostra os valores em duas colunas lado a lado (Estilo Dashboard)
+    col1, col2 = st.columns(2)
+    col1.metric("Dívida Total", f"R$ {divida_total:.2f}")
+    col2.metric("Saldo Disponível", f"R$ {saldo_atual:.2f}")
 
     # Barra de Progresso Gráfica
     if divida_total > 0:
